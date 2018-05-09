@@ -1,8 +1,8 @@
 var players = {};
-var myself = new SpaceShip(0,0);
+var myself = new Player();
 
-// let ws = new WebSocket("ws://192.168.1.6:8001");
-let ws = new WebSocket("ws://localhost:8001");
+let ws = new WebSocket("ws://192.168.1.5:8001");
+// let ws = new WebSocket("ws://localhost:8001");
 
 ws.onmessage = function(msg) {
 
@@ -12,28 +12,27 @@ ws.onmessage = function(msg) {
     for (let name in obj.players) {
       let player = players[name]
       if (player) {
-        playerObj = obj.players[name];
-        player.x = playerObj.x;
-        player.y = playerObj.y;
-        player.facing = playerObj.facing;
-        if (player.name != myself.name) {
-          player.accelerating = playerObj.accelerating;
-        }
+        decode(obj.players[name], player);
       }
     }
   } else if (obj.action === "newPlayer") {
-    let player = new SpaceShip(obj.x, obj.y);
-    player.name = obj.name;
+
+    let player = new Player(obj.name);
     players[player.name] = player;
+
   } else if (obj.action === "initialize") {
+
     myself.name = obj.name;
     myself.x = obj.x;
     myself.y = obj.y;
     players[myself.name] = myself;
+
     for (let name in obj.others) {
+      players[name] = new Player(name);
       let other = obj.others[name];
-      players[name] = new SpaceShip(other.x, other.y);
+      decode(players[name], other);
     }
+
   } else if (obj.action === "removePlayer") {
     delete players[obj.name];
   }
@@ -43,18 +42,33 @@ ws.onopen = function() {
   console.log("Connected to server!");
 }
 
-setInterval(function(){
+let lastTime = 0;
+const updateRateMs = 50;
+render = function(){
+
+  let nowMs = performance.now();
+  let timeScale = 1;
+  let elapsedMs = (nowMs - lastTime);
+
+  if (lastTime != 0) {
+    timeScale = elapsedMs / (updateRateMs);
+  }
+
+  lastTime = nowMs;
 
   /* Draw a black rectangle from the top left corner to fill the width and height of the canvas */
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "#000099";
   ctx.fillRect(0, 0, width, height);
 
   for (let playerName in players) {
     players[playerName].draw();
+    players[playerName].update(timeScale, width, height);
   }
 
-}, 100);
+  requestAnimationFrame(render);
+};
 
+render();
 
 /* This function will listen to key down events, and update the myself object */
 function handleKeyDown(e) {
@@ -68,6 +82,9 @@ function handleKeyDown(e) {
   } else if (e.keyCode == 39) {
     /* 39 is the keyCode for right arrow */
     myself.turningRight = true;
+  } else if (e.keyCode == 32 && !(e.repeat)) {
+    /* 32 is the keyCode for space */
+    myself.firing = true;
   } else {
     handled = false;
   }
@@ -97,6 +114,9 @@ function handleKeyUp(e) {
   } else if (e.keyCode == 39) {
     /* 39 is the keyCode for right arrow */
     myself.turningRight = false;
+  } else if (e.keyCode == 32) {
+    /* 32 is the keyCode for space */
+    myself.firing = false;
   } else {
     handled = false;
   }

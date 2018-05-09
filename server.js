@@ -1,27 +1,15 @@
-const updateRateMs = 33;
+var Player = require ("./player.js");
+var Gun = require ("./gun.js");
+var protocol = require ("./protocol.js");
+
+const updateRateMs = 50;
 let playerNames = 0;
 /* Create the values for our screen width and height */
-var width = 500;
-var height = 500;
+var width = 800;
+var height = 600;
 let players = {};
 
 var ws = require("nodejs-websocket");
-
-function Player(conn) {
-  this.name = playerNames;
-  this.conn = conn;
-  playerNames++;
-  this.x = Math.random() * width;      /* X (horizontal) location of our spaceship in pixels from the left side of the screen. Start it in the middle. (half the width) */
-  this.y = Math.random() * height;     /* Y (vertical) location of our spaceship in pixels from the top of the screen. Start it in the middle. (half the height) */
-  this.facing = 0;         /* Angle that the spaceship is facing */
-  this.speedX = 0.0;       /* Current speed of the ship in the X direction in pixels per tick */
-  this.speedY = 0.0;       /* Current speed of the ship in the Y direction in pixels per tick */
-  this.rateOfTurn = 0.1;   /* Radians per tick that the ship will turn */
-  this.rateOfAccel = 0.08;  /* Pixels per tick per tick that the spaceship accelerates */
-  this.turningLeft = false;
-  this.turningRight = false;
-  this.accelerating = false;
-}
 
 function updatePlayerState(report) {
   if (report.action == "update") {
@@ -77,13 +65,7 @@ function tellEveryoneAboutEveryone(){
   };
 
   for (let name in players) {
-    let player = players[name];
-    obj.players[name] = {
-      x: player.x,
-      y: player.y,
-      facing: player.facing,
-      accelerating : player.accelerating
-    };
+    obj.players[name] = protocol.encode(players[name]);
   }
 
   let message = JSON.stringify(obj);
@@ -91,7 +73,6 @@ function tellEveryoneAboutEveryone(){
   for (let name in players) {
     players[name].conn.send(message);
   }
-
 }
 
 var lastTime = 0;
@@ -107,39 +88,7 @@ setInterval(function() {
 
   for (let name in players) {
     let player = players[name];
-
-    if (player.turningLeft) {
-      player.facing -= player.rateOfTurn * timeScale;
-    }
-
-    if (player.turningRight) {
-      player.facing += player.rateOfTurn * timeScale;
-    }
-
-    if (player.accelerating) {
-      player.speedX += player.rateOfAccel * Math.sin(player.facing) * timeScale;
-      player.speedY -= player.rateOfAccel * Math.cos(player.facing) * timeScale;
-    }
-
-    player.x += player.speedX;
-    player.y += player.speedY;
-
-    if (player.x < 0){
-      player.x = 1;
-      player.speedX = -player.speedX / 2;
-    }
-    if (player.x > width){
-      player.x = width-1;
-      player.speedX = -player.speedX / 2;
-    }
-    if (player.y < 0){
-      player.y = 1;
-      player.speedY = -player.speedY / 2;
-    }
-    if (player.y > height) {
-      player.y = height-1;
-      player.speedY = -player.speedY / 2;
-    }
+    player.update(timeScale, width, height);
   }
 
   tellEveryoneAboutEveryone();
@@ -148,8 +97,11 @@ setInterval(function() {
 
 var server = ws.createServer(function (conn, req) {
 
-  var player = new Player(conn);
+  var player = new Player(playerNames, conn);
+  player.x = Math.random() * width;
+  player.y = Math.random() * height;
   players[player.name] = player;
+  playerNames++;
 
   conn.on("text", function (str) {
     updatePlayerState(JSON.parse(str));

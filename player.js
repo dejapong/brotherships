@@ -1,14 +1,7 @@
-/* Create the values for our screen width and height */
-var width = 500;
-var height = 500;
-
-/* Grab the canvas element with the id "screen" and set the width and height for it */
-var canvas = document.getElementById("screen");
-canvas.width = width;
-canvas.height = height;
-
-/* Get a "context" from the canvas. This is an object that has drawing functions in it */
-var ctx = canvas.getContext("2d")
+if (typeof require !== "undefined") {
+  var Body = require("./body.js");
+  var Gun = require("./gun.js");
+}
 
 /*
  * This function returns a rotated point, based off an original point, a center of rotation, and an angle.
@@ -26,16 +19,43 @@ function getRotatedPoint(point, center, angle) {
   };
 }
 
-function SpaceShip(initialX, initialY) {
-  Player.call(this);
+function Player(name, conn) {
+  this.name = name;
+  this.conn = conn;
+  Body.call(this)
+
+  this.rateOfTurn = 0.07;   /* Radians per tick that the ship will turn */
+  this.rateOfAccel = 0.08;  /* Pixels per tick per tick that the spaceship accelerates */
+  this.turningLeft = false;
+  this.turningRight = false;
+  this.accelerating = false;
+  this.firing = false;
+  this.gun = new Gun();
   this.size = 40;
 }
 
-SpaceShip.prototype = Object.assign( Object.create(Player.prototype), {
+Player.prototype = {
 
-  /*
-   * This function will update the state of the game and render the graphics. This code doesn't get run until we call tick() somewhere.
-   */
+  update: function(timeScale, width, height) {
+
+    if (this.firing) {
+      this.gun.fire(this);
+      this.firing = false;
+    }
+
+    if (this.turningLeft) {
+      this.facing -= this.rateOfTurn * timeScale;
+    }
+
+    if (this.turningRight) {
+      this.facing += this.rateOfTurn * timeScale;
+    }
+
+    Body.prototype.update.call(this, timeScale, width, height);
+
+    this.gun.update(timeScale, width, height);
+  },
+
   draw : function(){
 
     /*
@@ -103,5 +123,11 @@ SpaceShip.prototype = Object.assign( Object.create(Player.prototype), {
       ctx.fillStyle = "orange";
       ctx.fill();
     }
+
+    this.gun.draw();
   }
-});
+}
+
+if (typeof module != "undefined") {
+  module.exports = Player;
+}
