@@ -1,5 +1,16 @@
 <html>
-  <canvas id="screen" style="margin:auto"></canvas>
+  <style>
+
+    #container img, #container canvas {
+      display:inline;
+      position: absolute;
+      top:0px;
+      left:0px;
+    }
+  </style>
+  <div id="container">
+    <canvas id="screen" style="margin:auto"></canvas>
+  </div>
   <script type="text/javascript" src="canvas.js"></script>
   <script type="text/javascript" src="protocol.js"></script>
   <script type="text/javascript" src="body.js"></script>

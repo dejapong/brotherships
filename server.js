@@ -16,16 +16,16 @@ function updatePlayerState(report) {
     players[report.name].turningLeft = report.turningLeft;
     players[report.name].turningRight = report.turningRight;
     players[report.name].accelerating = report.accelerating;
+    players[report.name].firing = report.firing;
   }
 }
 
 function tellEveryoneAboutTheNewPlayer(player) {
 
   let obj = {
-    action : "newPlayer",
-    name : player.name,
-    x : player.x,
-    y : player.y,
+    action: "newPlayer",
+    name: player.name,
+    player: protocol.encode(player)
   };
 
   let actionMessage = JSON.stringify(obj);
@@ -49,7 +49,7 @@ function tellThePlayerAboutHisNewWorld(player) {
   for (let name in players) {
     if (name != player.name) {
       let player = players[name];
-      obj.others[name] = { x: player.x, y: player.y };
+      obj.others[name] = protocol.encode(player);
     }
   }
 
@@ -61,7 +61,7 @@ function tellEveryoneAboutEveryone(){
 
   let obj = {
     action:"update",
-    players:{}
+    players: {}
   };
 
   for (let name in players) {

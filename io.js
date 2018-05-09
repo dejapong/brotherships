@@ -7,10 +7,9 @@ let ws = new WebSocket("ws://192.168.1.5:8001");
 ws.onmessage = function(msg) {
 
   let obj = JSON.parse(msg.data);
-
   if (obj.action === "update") {
     for (let name in obj.players) {
-      let player = players[name]
+      let player = players[name];
       if (player) {
         decode(obj.players[name], player);
       }
@@ -18,10 +17,10 @@ ws.onmessage = function(msg) {
   } else if (obj.action === "newPlayer") {
 
     let player = new Player(obj.name);
+    decode(obj.player, player);
     players[player.name] = player;
 
   } else if (obj.action === "initialize") {
-
     myself.name = obj.name;
     myself.x = obj.x;
     myself.y = obj.y;
@@ -30,7 +29,7 @@ ws.onmessage = function(msg) {
     for (let name in obj.others) {
       players[name] = new Player(name);
       let other = obj.others[name];
-      decode(players[name], other);
+      decode(other,players[name]);
     }
 
   } else if (obj.action === "removePlayer") {
@@ -44,6 +43,8 @@ ws.onopen = function() {
 
 let lastTime = 0;
 const updateRateMs = 50;
+
+
 render = function(){
 
   let nowMs = performance.now();
@@ -56,9 +57,7 @@ render = function(){
 
   lastTime = nowMs;
 
-  /* Draw a black rectangle from the top left corner to fill the width and height of the canvas */
-  ctx.fillStyle = "#000099";
-  ctx.fillRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width,height);
 
   for (let playerName in players) {
     players[playerName].draw();
@@ -96,8 +95,11 @@ function handleKeyDown(e) {
       accelerating: myself.accelerating,
       turningLeft: myself.turningLeft,
       turningRight: myself.turningRight,
+      firing: myself.firing,
     }));
   }
+
+  e.preventDefault();
 }
 
 /* This function will listen to key up events, and update the myself object */
@@ -128,8 +130,11 @@ function handleKeyUp(e) {
       accelerating: myself.accelerating,
       turningLeft: myself.turningLeft,
       turningRight: myself.turningRight,
+      firing: myself.firing,
     }));
   }
+
+  e.preventDefault();
 }
 
 /* Set up the function to get called whenever a key is pressed down */

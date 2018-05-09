@@ -27,7 +27,6 @@ Bullet.prototype = Object.assign(Object.create(Body.prototype), {
 
   update : function(timeScale, width, height) {
     Body.prototype.update.call(this, timeScale, width, height);
-
     this.t += timeScale;
     this.z = this.Vz0 * this.t - .5 *  1 * this.t * this.t;
     if (this.z <= 0) {
@@ -72,9 +71,9 @@ function Gun() {
 Gun.prototype = {
 
   fire: function(player) {
+
     //find a dead bullet
     let bullet;
-
     for (let testBullet of this.bullets) {
       if (!testBullet.alive) {
         bullet = testBullet;
