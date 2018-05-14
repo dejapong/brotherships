@@ -3,14 +3,16 @@ const bulletScale = .03;
 const bulletMin = 3;
 const lightAngle = 45 * Math.PI * 180;
 
-if (typeof Body == "undefined") {
+if (typeof require != "undefined") {
+  var collision = require("./collision.js");
   var Body = require("./body.js");
 }
 
-function Bullet() {
+function Bullet(gun) {
   Body.call(this);
   this.drag = 0.001
   this.alive = false;
+  this.gun = gun;
 }
 
 Bullet.prototype = Object.assign(Object.create(Body.prototype), {
@@ -22,20 +24,28 @@ Bullet.prototype = Object.assign(Object.create(Body.prototype), {
     this.facing = facing;
     this.speed = hSpeed;
     this.Vz0 = vSpeed;
+    this.U0 = 0;
     this.t = 0;
+    this.z = 0;
   },
 
   update : function(timeScale, width, height) {
     Body.prototype.update.call(this, timeScale, width, height);
     this.t += timeScale;
     this.z = this.Vz0 * this.t - .5 *  1 * this.t * this.t;
-    if (this.z <= 0) {
+
+    if (this.z < 0) {
       this.alive = false;
+      this.gun.livingBullets--;
+      if (collision){
+        collision.checkBulletSplash(this.x, this.y);
+      }
     }
+
   },
 
   draw : function() {
-    let radius = bulletMin + this.z * bulletScale;
+    let radius = Math.max(bulletMin, bulletMin + this.z * bulletScale);
 
     ctx.fillStyle = "#000000";
     ctx.beginPath();
@@ -45,7 +55,7 @@ Bullet.prototype = Object.assign(Object.create(Body.prototype), {
       radius, 0, 2 * Math.PI);
     ctx.fill();
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = this.gun.player.color;
     ctx.beginPath();
     ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI);
     ctx.fill();
@@ -53,18 +63,19 @@ Bullet.prototype = Object.assign(Object.create(Body.prototype), {
 
 });
 
-function Gun() {
+function Gun(player) {
   this.maxBullets = 10;
   this.bullets = [];
   this.facing = 0 ;
+  this.livingBullets = 0;
   this.x =0;
   this.y =0;
-
+  this.player = player;
   this.muzzleVelocity = 20;
   this.inclination = 45 * Math.PI / 180;
 
   for (let i =0 ; i < this.maxBullets; i++) {
-    this.bullets.push(new Bullet());
+    this.bullets.push(new Bullet(this));
   }
 }
 
@@ -88,6 +99,8 @@ Gun.prototype = {
         player.facing + this.facing,
         player.speed + this.muzzleVelocity * Math.cos(this.inclination),
         this.muzzleVelocity * Math.sin(this.inclination));
+
+      this.livingBullets++;
     }
   },
 
@@ -110,5 +123,8 @@ Gun.prototype = {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = Gun;
+  module.exports = {
+    Gun: Gun,
+    Bullet: Bullet
+  }
 }

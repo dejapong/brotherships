@@ -1,20 +1,133 @@
 <html>
-  <style>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <!-- <link href="https://fonts.googleapis.com/css?family=Great+Vibes|Skranji" rel="stylesheet"> -->
 
-    #container img, #container canvas {
-      display:inline;
-      position: absolute;
-      top:0px;
-      left:0px;
-    }
-  </style>
-  <div id="container">
-    <canvas id="screen" style="margin:auto"></canvas>
-  </div>
-  <script type="text/javascript" src="canvas.js"></script>
-  <script type="text/javascript" src="protocol.js"></script>
-  <script type="text/javascript" src="body.js"></script>
-  <script type="text/javascript" src="player.js"></script>
-  <script type="text/javascript" src="gun.js"></script>
-  <script type="text/javascript" src="io.js"></script>
-<html>
+    <style>
+      #screen {
+        width:800px; height:600px;
+        border:1px solid #000000;
+      }
+      #headerOne {
+        font-family: 'Great Vibes', cursive;
+        color:white;
+        font-size: 50px;
+      }
+
+      #instrutions {
+        color:white;
+      }
+
+      #playerTable{
+        width:400px; height: 150px;
+        margin: 0 auto;
+        margin-top: 50px;
+
+      }
+      th {
+        color:white;
+      }
+      table, th, td, tr {
+          border: 1px solid white;
+      }
+      body{
+        text-align: center;
+        background: url('/images/background.jpg');
+        background-size:     cover;
+        background-repeat:   no-repeat;
+          background-position: center center;
+          background-color: black;
+      }
+
+      #container {
+        position: relative;
+        margin:0px auto;
+        width:800px;
+        height:600px;
+      }
+
+      div #screen {
+      }
+
+      #container div, #container canvas {
+        /*display:inline;*/
+        position: absolute;
+        top:0px;
+        left:0px;
+        width:800px;
+        height:600px;
+      }
+
+      @keyframes imageAnimation {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      #watertile1 {
+        background : url("images/water1.png");
+      }
+
+      #watertile2 {
+        background : url("images/water2.png");
+        animation: imageAnimation 2s linear infinite 0s;
+      }
+
+    </style>
+    <h1 id=headerOne> This Ocean Isn't Big Enough For The Three Of Us</h1>
+    <div id="container">
+      <div id="watertile1"></div>
+      <div id="watertile2"></div>
+      <canvas id="screen"></canvas>
+    </div>
+    <table id=playerTable>
+      <thead>
+        <tr>
+          <th id="name">Name</th>
+          <th id="kills">Kills</th>
+          <th id="deaths">Deaths</th>
+          <th id="accuracy">Accuracy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="playerOneName"></td>
+          <td id="playerOneKills"></td>
+          <td id="playerOneDeaths"></td>
+          <td id="playerOneAccuracy"></td>
+        </tr>
+        <tr>
+          <td id="playerTwoName"></td>
+          <td id="playerTwoKills"></td>
+          <td id="playerTwoDeaths"></td>
+          <td id="playerTwoAccuracy"></td>
+        </tr>
+        <tr>
+          <td id="playerThreeName"></td>
+          <td id="playerThreeKills"></td>
+          <td id="playerThreeDeaths"></td>
+          <td id="playerThreeAccuracy"></td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <h2 id="instrutions">How to play</h2>
+    <p id="instrutions">Move around with the "Arrow-Keys", and shoot enemy navel ships with "Space" </p>
+    <script type="text/javascript" src="binaryProtocol.js"></script>
+    <script type="text/javascript" src="canvas.js"></script>
+    <!-- <script type="text/javascript" src="protocol.js"></script> -->
+    <script type="text/javascript" src="body.js"></script>
+    <script type="text/javascript" src="player.js"></script>
+    <script type="text/javascript" src="gun.js"></script>
+    <script type="text/javascript" src="io.js"></script>
+  </body>
+</html>

@@ -7,6 +7,7 @@ function Body(){
   this.speedX = 0.0;       /* Current speed of the ship in the X direction in pixels per tick */
   this.speedY = 0.0;       /* Current speed of the ship in the Y direction in pixels per tick */
   this.drag = 0.01;
+  this.alive = true;
 }
 
 Body.prototype = {
@@ -29,22 +30,22 @@ Body.prototype = {
 
     if (this.x < 0){
       this.x = 1;
-      this.facing = this.facing - Math.PI;
+      this.facing = Math.atan2(-this.speedX, -this.speedY);
     }
 
     if (this.x > width){
-      this.x = width-1;
-      this.facing = this.facing - Math.PI;
+      this.x = width - 1;
+      this.facing = Math.atan2(-this.speedX, -this.speedY);
     }
 
     if (this.y < 0){
       this.y = 1;
-      this.facing = this.facing - Math.PI;
+      this.facing = Math.atan2(this.speedX, this.speedY);
     }
 
     if (this.y > height) {
-      this.y = height-1;
-      this.facing = this.facing - Math.PI;
+      this.y = height - 1;
+      this.facing = Math.atan2(this.speedX, this.speedY);
     }
   }
 }
