@@ -22,36 +22,72 @@ function getRotatedPoint(point, center, angle) {
 function Player(name, conn) {
   this.name = name;
   this.conn = conn;
-  Body.call(this)
+  Body.call(this);
   this.maxSpeed = 5;
   this.rateOfTurn = 0.17;   /* Radians per tick that the ship will turn */
   this.rateOfAccel = 0.18;  /* Pixels per tick per tick that the spaceship accelerates */
   this.turningLeft = false;
   this.turningRight = false;
   this.accelerating = false;
-  this.firing = false;
-  this.gun = new Gun(this);
-  this.gun.facing = Math.PI / 2;
+
+  this.guns = [new Gun(this), new Gun(this)];
+  this.guns[0].facing = -Math.PI / 2;
+  this.guns[1].facing = Math.PI / 2;
+
   this.size = 64;
+  this.length = 64;
+  this.width = 25;
 
   if (typeof Image != "undefined") {
     this.shipImage = new Image();
-    this.shipImage.src = "images/ship.png";
+    this.shipImage.src = "images/Ship_red_64x64.png";
     this.wreckageImage = new Image();
     this.wreckageImage.src = "images/wreckage.png";
   }
+
+  /*    * 0
+       / \
+    5 *   * 1
+      |   |
+      | x |
+      |   |
+    4 *   * 2
+       \ /
+        * 3
+  */
+
+  let w2 = this.width/2;
+  let l2 = this.length/2;
+  let lBow = this.length/4;
+  let lStern = this.length/2.5;
+  this.vertices = [
+    [   0,    - l2],
+    [  w2,  - lBow],
+    [  w2,    lStern],
+    [   0,      l2],
+    [- w2,    lStern],
+    [- w2,  - lBow],
+  ];
+
 }
 
 
 Player.prototype = {
 
+  clientUpdate : function() {
+    for (let gun of this.guns) {
+      gun.clientUpdate();
+    }
+  },
+
   update: function(timeScale, width, height) {
 
     if (this.alive) {
 
-      if (this.firing) {
-        this.gun.fire(this);
-        this.firing = false;
+      for (let gun of this.guns) {
+        if (gun.firing) {
+          gun.fire();
+        }
       }
 
       if (this.turningLeft) {
@@ -65,7 +101,10 @@ Player.prototype = {
       Body.prototype.update.call(this, timeScale, width, height);
     }
 
-    this.gun.update(timeScale, width, height);
+    for (let gun of this.guns) {
+      gun.update(timeScale, width, height);
+    }
+
   },
 
   draw : function(){
@@ -73,16 +112,25 @@ Player.prototype = {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.facing);
+    ctx.strokeStyle = this.color;
+
+    if (this.alive) {
+      ctx.beginPath();
+      ctx.moveTo(this.vertices[0][0], this.vertices[0][1])
+      for (let i =1; i< this.vertices.length; i++) {
+        ctx.lineTo(this.vertices[i][0],this.vertices[i][1]);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+
     let img = this.alive ? this.shipImage : this.wreckageImage;
     ctx.drawImage(img, -this.size/2, -this.size/2 , this.size, this.size);
     ctx.restore();
 
-    /* If the user is accelerating, draw the flame using points 2,3,4 */
-    if (this.accelerating) {
-
+    for (let gun of this.guns) {
+      gun.draw();
     }
-
-    this.gun.draw();
   }
 }
 

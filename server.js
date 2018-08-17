@@ -14,23 +14,32 @@ let players = collision.players;
 
 var ws = require("nodejs-websocket");
 
-ws.setBinaryFragmentation(128);
+ws.setBinaryFragmentation(80);
 
 function tellEveryoneAboutTheNewPlayer(player) {
-  let buffer = new ArrayBuffer(512);
+  let buffer = new ArrayBuffer(80);
   let singlePlayer = {};
   singlePlayer[player.name] = player;
   let bytesWritten = bProtocol.encodeMessage(bProtocol.ACTION_JOINED, singlePlayer, buffer);
 
+  /* Tell others about the player */
   for ( let name in players ) {
     let u8b = new Uint8Array(buffer, 0, bytesWritten);
-    let player = players[name];
-    player.conn.sendBinary(u8b);
+    if (name != player.name) {
+      let other = players[name];
+      other.conn.sendBinary(u8b);
+    }
   }
+
+  /* Tell the player his identity */
+  bytesWritten = bProtocol.encodeMessage(bProtocol.ACTION_IDENTITY, singlePlayer, buffer);
+  u8b = new Uint8Array(buffer, 0, bytesWritten);
+  player.conn.sendBinary(u8b);
+
 }
 
 function tellEveryoneAboutEveryone() {
-  let buffer = new ArrayBuffer(512);
+  let buffer = new ArrayBuffer(80);
   let bytesWritten = bProtocol.encodeMessage(bProtocol.ACTION_UPDATE, players, buffer);
 
   for ( let name in players ) {
@@ -44,7 +53,7 @@ function tellEveryoneAboutEveryone() {
 }
 
 function tellEveryoneAboutTheLeftPlayer(player) {
-  let buffer = new ArrayBuffer(512);
+  let buffer = new ArrayBuffer(80);
   let singlePlayer = {};
   singlePlayer[player.name] = player;
   let bytesWritten = bProtocol.encodeMessage(bProtocol.ACTION_LEFT, singlePlayer, buffer);
@@ -72,16 +81,10 @@ setInterval(function() {
 
   let deadPlayers = [];
 
-  // let str = "";
-
   for (let name in players) {
     let player = players[name];
     player.update(timeScale, width, height);
-
-    // str += `${name}_${player.alive}\t`
   }
-
-  // console.log(str);
 
   tellEveryoneAboutEveryone();
 
@@ -96,17 +99,18 @@ var server = ws.createServer(function (conn, req) {
   playerNames++;
 
   conn.on("binary", function(player, inStream) {
-    var data = new ArrayBuffer(1)
+
     inStream.on("readable", function () {
-      var newData = inStream.read()
+      var newData = inStream.read();
       if (newData) {
-        let bitFlags = new Uint8Array(newData);
         if (player.alive) {
-          bProtocol.decodeBitFlags(player, bitFlags[0]);
+          let buffer = newData.buffer.slice(newData.byteOffset, newData.byteOffset + newData.byteLength);
+          bProtocol.decodeClientMessage(player, buffer);
         }
         player.readyForMore = true;
       }
     });
+
   }.bind(this, player));
 
   conn.on("close", function (code, reason) {

@@ -8,7 +8,7 @@
     <style>
       #screen {
         width:800px; height:600px;
-        border:1px solid #000000;
+        border:0px solid #000000;
       }
       #headerOne {
         font-family: 'Great Vibes', cursive;
@@ -16,7 +16,7 @@
         font-size: 50px;
       }
 
-      #instrutions {
+      #instructions {
         color:white;
       }
 
@@ -30,7 +30,8 @@
         color:white;
       }
       table, th, td, tr {
-          border: 1px solid white;
+        border: 0px solid white;
+        border-collapse: collapse;
       }
       body{
         text-align: center;
@@ -44,6 +45,11 @@
       #container {
         position: relative;
         margin:0px auto;
+      }
+
+      #canvases {
+        position: relative;
+        margin:0px auto;
         width:800px;
         height:600px;
       }
@@ -51,7 +57,7 @@
       div #screen {
       }
 
-      #container div, #container canvas {
+      #canvases div, #canvases canvas {
         /*display:inline;*/
         position: absolute;
         top:0px;
@@ -81,13 +87,36 @@
         animation: imageAnimation 2s linear infinite 0s;
       }
 
+      .powerBar {
+        width : 10px;
+        height : 600px;
+        display: table-cell;
+        background:linear-gradient(red, yellow);
+        vertical-align: bottom;
+      }
+
+      .powerBarLevel {
+        width : 100%;
+        height : 200px;
+        background: blue;
+      }
+
     </style>
     <h1 id=headerOne> This Ocean Isn't Big Enough For The Three Of Us</h1>
-    <div id="container">
-      <div id="watertile1"></div>
-      <div id="watertile2"></div>
-      <canvas id="screen"></canvas>
-    </div>
+    <table id="container">
+      <tr><td>
+        <div id="powerBar1" class="powerBar"><div id="powerBarLevel1" class="powerBarLevel"></div></div>
+      </td><td>
+      <div id="canvases">
+        <div id="watertile1"></div>
+        <div id="watertile2"></div>
+        <canvas id="screen"></canvas>
+      </div>
+      </td>
+      </td><td>
+        <div id="powerBar2" class="powerBar"><div id="powerBarLevel2" class="powerBarLevel"></div></div>
+      </td></tr>
+    </table>
     <table id=playerTable>
       <thead>
         <tr>
@@ -120,11 +149,10 @@
       </tbody>
     </table>
 
-    <h2 id="instrutions">How to play</h2>
-    <p id="instrutions">Move around with the "Arrow-Keys", and shoot enemy navel ships with "Space" </p>
+    <h2 id="instructions">How to play</h2>
+    <p id="instructions">Move around with the "Arrow-Keys", and shoot enemy naval ships with "A" or "S". Hold down fire keys for more range </p>
     <script type="text/javascript" src="binaryProtocol.js"></script>
     <script type="text/javascript" src="canvas.js"></script>
-    <!-- <script type="text/javascript" src="protocol.js"></script> -->
     <script type="text/javascript" src="body.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="gun.js"></script>
