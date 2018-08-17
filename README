@@ -1,0 +1,4 @@
+Brotherships is a top-down ship fighting game I created to demonstrate programming to my younger brothers. It started out pretty simple and now supports multiplayer through a websocket connection with binary protocol.
+
+The game is run on a javascript server, and clients interpolate game states for more fluid motion during game lag.
+
